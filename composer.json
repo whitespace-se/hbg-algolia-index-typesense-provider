@@ -3,6 +3,10 @@
     "description": "Typesense search provider for Algolia Index plugin",
     "type": "wordpress-plugin",
     "license": "MIT",
+    "support": {
+        "source": "https://github.com/whitespace-se/hbg-algolia-index-typesense-provider/tree/maintenance/m5",
+        "issues": "https://github.com/whitespace-se/hbg-algolia-index-typesense-provider/issues"
+    },
     "scripts": {
         "test": "vendor/bin/phpunit",
         "test:coverage": "XDEBUG_MODE=coverage vendor/bin/phpunit --coverage-html .coverage/html --coverage-clover .coverage/clover.xml",
