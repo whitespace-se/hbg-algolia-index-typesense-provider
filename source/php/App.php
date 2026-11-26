@@ -6,6 +6,7 @@ namespace AlgoliaIndexTypesenseProvider;
 
 use AlgoliaIndexTypesenseProvider\Helper\Options;
 use AlgoliaIndexTypesenseProvider\Provider\Typesense\TypesenseProviderFactory;
+use AlgoliaIndexTypesenseProvider\Rest\SearchProxy;
 
 class App
 {
@@ -26,10 +27,19 @@ class App
         );
         add_filter('AlgoliaIndex/Provider/Factory', [$this, 'registerProvider']);
 
+        if (SearchProxy::isEnabled()) {
+            (new SearchProxy())->register();
+        }
+
         // Plugin(helsingborg-stad/algolia-index-js-searchpage-addon) integration
         add_filter('AlgoliaIndex/SearchConfig', static function ($config) {
             if (get_field('algolia_index_search_provider', 'option') !== 'typesense' || !Options::publicApiKey() || !Options::apiUrl()) {
                 return $config;
+            }
+
+            // Proxy mode: no Typesense address or key reaches the browser.
+            if (SearchProxy::isEnabled()) {
+                return array_merge($config, SearchProxy::browserConfig());
             }
 
             $parts = parse_url(Options::apiUrl());
@@ -45,7 +55,8 @@ class App
         });
 
         add_filter('WpSecurity/Csp', static function ($domains) {
-            if (get_field('algolia_index_search_provider', 'option') !== 'typesense') {
+            // Proxy mode searches the site's own origin, already covered by 'self'.
+            if (get_field('algolia_index_search_provider', 'option') !== 'typesense' || SearchProxy::isEnabled()) {
                 return $domains;
             }
 
