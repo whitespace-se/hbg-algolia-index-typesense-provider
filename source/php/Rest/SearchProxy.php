@@ -50,6 +50,45 @@ class SearchProxy
     }
 
     /**
+     * Read-only search mode status in the Typesense settings group. The mode is
+     * server config, deliberately not an option an admin or a database copy can change.
+     */
+    public static function registerSettingsStatus(): void
+    {
+        // The settings group is imported on acf/init at the default priority.
+        add_action('acf/init', static function (): void {
+            $enabled = self::isEnabled();
+
+            acf_add_local_field([
+                'key' => 'field_aitp_search_mode_status',
+                'label' => '',
+                'name' => '',
+                // A message field posts nothing; ACF true_false has no disabled state.
+                'type' => 'message',
+                'parent' => 'group_68bfb035c379f',
+                'esc_html' => 0,
+                'new_lines' => '',
+                // ACF's own switch markup without an input, so it shows state but cannot be toggled.
+                // ACF's sanitizer drops aria-checked, so screen-reader text carries the state.
+                // ACF's switch is display:grid and WordPress strips inline display rules, so the
+                // label floats left and the switch (its own formatting context) sits beside it.
+                'message' => '<div style="overflow:hidden;margin-bottom:8px">'
+                    . '<strong style="float:left;line-height:32px;margin-right:12px">' . esc_html__('Secure search enabled', 'algolia-index-typesense-provider') . '</strong>'
+                    . '<span class="screen-reader-text">' . ($enabled ? esc_html__('Yes', 'acf') : esc_html__('No', 'acf')) . '</span>'
+                    . '<div class="acf-switch' . ($enabled ? ' -on' : '') . '" aria-hidden="true" style="opacity:.6;cursor:not-allowed">'
+                    . '<span class="acf-switch-on">' . esc_html__('Yes', 'acf') . '</span>'
+                    . '<span class="acf-switch-off">' . esc_html__('No', 'acf') . '</span>'
+                    . '<div class="acf-switch-slider"></div></div></div>'
+                    . '<p class="description">'
+                    . esc_html__('Enable for intranets and sites where some content is private or for logged-in users only. Search then requires login, runs through this site and only returns content the user may read; Typesense is never exposed to the browser. Leave it off for public sites: visitors who are not logged in cannot search when it is on.', 'algolia-index-typesense-provider')
+                    . '</p><p class="description">'
+                    . esc_html__('Read-only here. A server administrator sets it in the site config with define(\'TYPESENSEINDEX_SEARCH_MODE\', \'wp-rest\');', 'algolia-index-typesense-provider')
+                    . '</p>',
+            ]);
+        }, 20);
+    }
+
+    /**
      * Browser config for the addon: same origin, nonce in place of a Typesense key.
      */
     public static function browserConfig(): array

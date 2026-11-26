@@ -27,6 +27,7 @@ class App
         );
         add_filter('AlgoliaIndex/Provider/Factory', [$this, 'registerProvider']);
 
+        SearchProxy::registerSettingsStatus();
         if (SearchProxy::isEnabled()) {
             (new SearchProxy())->register();
         }
