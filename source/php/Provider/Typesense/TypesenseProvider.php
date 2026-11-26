@@ -133,6 +133,14 @@ class TypesenseProvider implements \AlgoliaIndex\Provider\AbstractProvider
         return $response['result'];
     }
 
+    /**
+     * Raw document search for the same-origin proxy, which builds every parameter server-side.
+     */
+    public function searchDocuments(array $params): array
+    {
+        return $this->sendRequest('GET', '/collections/' . rawurlencode($this->collectionName) . '/documents/search', $params);
+    }
+
     public function clearObjects()
     {
         $response = $this->sendRequest('DELETE', "/collections/{$this->collectionName}/documents?truncate=true");
